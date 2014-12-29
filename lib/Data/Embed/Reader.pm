@@ -9,9 +9,7 @@ use Fcntl qw< :seek >;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 use Storable qw< dclone >;
 use Data::Embed::File;
-
-use constant STARTER    => "Data::Embed/index/begin\n";
-use constant TERMINATOR => "Data::Embed/index/end\n";
+use Data::Embed::Util qw< :constants unescape >;
 
 =head1 METHODS
 
@@ -100,7 +98,13 @@ sub _ensure_index {
       my $index = $self->_load_index()
         || {
          files => [],
-         index => undef,
+         _index => Data::Embed::File->new(
+            fh       => $self->{fh},
+            filename => $self->{filename},
+            name     => 'Data::Embed index',
+            length   => 0,
+            offset   => scalar(-s $self->{fh}),
+         ),
         };
       %$self = (%$self, %$index);
    } ## end if (!exists $self->{files...})
@@ -128,8 +132,9 @@ sub _load_index {
    my $data_length = 0;
    my ($fh, $filename) = @{$self}{qw< fh filename >};
    my @files = map {
-      my ($length, $name) = m{\A \s* (\d+) \s+ (.*) \s*\z}mxs
+      my ($length, $name) = m{\A \s* (\d+) \s+ (\S*) \s*\z}mxs
         or LOGCROAK "index line is not compliant: >$_<";
+      $name = Data::Embed::Util::unescape($name);
 
       # the offset at which "this" file lives is equal to the length
       # of all data considered so far
@@ -168,7 +173,7 @@ sub _load_index {
          name     => 'Data::Embed index',
          length   => $index_length,
          offset   => $data_length + $offset_correction,
-      )
+      ),
    };
 } ## end sub _load_index
 
