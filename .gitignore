@@ -1,2 +1,3 @@
 *.swp
 Data-Embed-*.tar.gz
+.build/
