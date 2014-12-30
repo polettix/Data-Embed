@@ -1,4 +1,5 @@
-use Test::More tests => 10;
+use Test::More tests => 15;
+use Test::Exception;
 
 use strict;
 use Data::Embed qw< embed embedded >;
@@ -18,29 +19,44 @@ my $testfile = __FILE__ . '.test1';
 
 {  # embed
    write_file($testfile, $prefix);
-   embed($testfile, data => $sample1, name => 'some thing');
-   embed($testfile, data => $sample2, name => 'anoth%%er');
+   lives_ok {
+      embed($testfile, data => $sample1, name => 'some thing');
+      embed($testfile, data => $sample2, name => 'anoth%%er');
+   } 'two calls to embed() lived';
    my $generated = read_file($testfile);
    is $generated, $contents, 'generated file is as expected';
 }
 
 {  # embedded
    write_file($testfile, $contents);
-   my @files = embedded($testfile);
+   my @files;
+   lives_ok {
+      @files = embedded($testfile);
+   } 'call to embedded() lived';
    is scalar(@files), 2, 'number of embedded files';
 
    my ($f1, $f2) = @files;
    isa_ok $f1, 'Data::Embed::File';
    is $f1->{name}, 'some thing', 'name of first file';
-   my $contents1 = $f1->contents();
+   my $contents1;
+   lives_ok {
+      $contents1 = $f1->contents();
+   } 'call to contents() lived';
    is $contents1, $sample1, 'contents of first embedded file, via contents()';
 
    isa_ok $f2, 'Data::Embed::File';
    is $f2->{name}, 'anoth%%er', 'name of second file';
-   my $fh = $f2->fh();
+   my $fh;
+   lives_ok {
+      $fh = $f2->fh();
+   } 'call to fh() lived';
    isa_ok $fh, 'GLOB', 'fh() output';
-   my $first_line = <$fh>;
+
+   my ($first_line, $rest);
+   lives_ok {
+      $first_line = <$fh>;
+      $rest = do { local $/; <$fh> };
+   } 'reading from filehandle lived';
    is $first_line, "binary data:\n", 'first line of second file';
-   my $rest = do { local $/; <$fh> };
    is $first_line . $rest, $sample2, 'contents of second file';
 }
