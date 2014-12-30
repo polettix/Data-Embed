@@ -37,12 +37,14 @@ sub new {
    # If a GLOB, just assign a default filename for logs and set
    # binary mode :raw
    if (ref($input) eq 'GLOB') {
+      DEBUG $package, ': input is a GLOB';
       $self->{filename} = '<GLOB>';
       binmode $input, ":raw"
         or LOGCROAK "binmode() to ':raw' failed";
       $self->{fh} = $input;
    } ## end if (ref($input) eq 'GLOB')
    else {    # otherwise... it's a filename
+      DEBUG $package, ': input is a file or other thing that can be open-ed';
       $self->{filename} = $input;
       open my $tmpfh, '>>:raw', $input
         or LOGCROAK "open('$input'): $OS_ERROR";
@@ -132,6 +134,7 @@ sub add_file {
    my ($self, $name, $filename) = @_;
    my $print_name =
      (ref($filename) eq 'SCALAR') ? 'internal data' : $filename;
+   DEBUG "add_file(): $name => $filename";
    open my $fh, '<:raw', $filename
      or LOGCROAK "open('$print_name'): $OS_ERROR";
    return $self->add_fh($name, $fh);
@@ -186,6 +189,7 @@ sub add_fh {
      or LOGCROAK "binmode(): $OS_ERROR";
 
    my $reader      = $self->{reader};
+   DEBUG "reader: ", sub { require Data::Dumper; Data::Dumper::Dumper($reader) };
    my $index       = $reader->_index();
    my $index_fh    = $index->fh();
    my @index_lines = <$index_fh>;

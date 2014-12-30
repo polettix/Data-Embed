@@ -38,12 +38,14 @@ sub new {
    # If a GLOB, just assign a default filename for logs and set
    # binary mode :raw
    if (ref($input) eq 'GLOB') {
+      DEBUG $package, ': input is a GLOB';
       $self->{filename} = '<GLOB>';
       binmode $input, ":raw"
          or LOGCROAK "binmode() to ':raw' failed";
       $self->{fh}       = $input;
    }
    else { # otherwise... it's a filename
+      DEBUG $package, ': input is a file or other thing that can be open-ed';
       $self->{filename} = $input;
       open $self->{fh}, '<:raw', $input
         or LOGCROAK "open('$input'): $OS_ERROR";
@@ -181,6 +183,7 @@ sub _load_index {
 sub _read_index {
    my $self = shift;
    my ($fh, $filename) = @{$self}{qw< fh filename >};
+   DEBUG "_read_index(): fh[$fh] filename[$filename]";
    my $full_length = -s $fh;    # length of the whole stream/file
 
    # look for TERMINATOR at the very end of the file
