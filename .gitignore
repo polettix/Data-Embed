@@ -1,4 +1,5 @@
 *.swp
 Data-Embed-*.tar.gz
+Data-Embed-*/
 .build/
 t/*.t.test*
