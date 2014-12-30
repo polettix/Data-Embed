@@ -117,7 +117,7 @@ sub embedded {
 1;
 __END__
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
    use Data::Embed qw< embed embedded >;
 
