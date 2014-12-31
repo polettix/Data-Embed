@@ -135,8 +135,14 @@ sub add_file {
    my $print_name =
      (ref($filename) eq 'SCALAR') ? 'internal data' : $filename;
    DEBUG "add_file(): $name => $filename";
-   open my $fh, '<:raw', $filename
+
+   # To make it work with references to scalars in perl pre-5.14
+   # we split open() and binmode()
+   open my $fh, '<', $filename
      or LOGCROAK "open('$print_name'): $OS_ERROR";
+   binmode $fh
+     or LOGCROAK "binmode('$print_name') failed";
+
    return $self->add_fh($name, $fh);
 } ## end sub add_file
 

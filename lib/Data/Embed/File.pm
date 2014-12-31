@@ -97,6 +97,15 @@ sub contents {
    return $retval;
 } ## end sub contents
 
+=head2 B<< name >>
+
+Get the name associated to the file, whatever it is. L<Data::Embed::Reader>
+sets it from what is read in the index file
+
+=cut
+
+sub name { return shift->{name}; }
+
 1;
 __END__
 
