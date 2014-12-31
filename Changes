@@ -1,4 +1,7 @@
 {{$NEXT}}
+   - workaround for perl bug in open() prior to version 5.14
+   - added name() method to Data::Embed::File
+   - added script for embedding/listing/extracting from container files
 
 0.1_01    2014-12-30 17:47:32 Europe/Rome
    - developer release to see what CPAN Testers say
