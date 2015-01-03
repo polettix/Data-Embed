@@ -17,7 +17,7 @@ use Fcntl qw< :seek >;
 Constructor. Takes one positional parameter, that can be either
 a filename or a filehandle (in particular, a GLOB).
 
-If a filename is provided, is it opened for read in C<:raw> mode; an
+If a filename is provided, is it opened for write in C<:raw> mode; an
 exception will be thrown if errors arise.
 
 If a filehandle is provided, it is expected to be seekable and will also
@@ -28,7 +28,7 @@ of errors.
 
 sub new {
    my $package = shift;
-   my $input   = shift;
+   my $output   = shift;
 
    # Undocumented, keep additional parameters around...
    my %args = (scalar(@_) && ref($_[0])) ? %{$_[0]} : @_;
@@ -36,23 +36,23 @@ sub new {
 
    # If a GLOB, just assign a default filename for logs and set
    # binary mode :raw
-   if (ref($input) eq 'GLOB') {
-      DEBUG $package, ': input is a GLOB';
+   if (ref($output) eq 'GLOB') {
+      DEBUG $package, ': output is a GLOB';
       $self->{filename} = '<GLOB>';
-      binmode $input, ":raw"
+      binmode $output, ":raw"
         or LOGCROAK "binmode() to ':raw' failed";
-      $self->{fh} = $input;
-   } ## end if (ref($input) eq 'GLOB')
+      $self->{fh} = $output;
+   } ## end if (ref($output) eq 'GLOB')
    else {    # otherwise... it's a filename
-      DEBUG $package, ': input is a file or other thing that can be open-ed';
-      $self->{filename} = $input;
-      open my $tmpfh, '>>:raw', $input
-        or LOGCROAK "open('$input'): $OS_ERROR";
+      DEBUG $package, ': output is a file or other thing that can be open-ed';
+      $self->{filename} = $output;
+      open my $tmpfh, '>>:raw', $output
+        or LOGCROAK "open('$output'): $OS_ERROR";
       close $tmpfh;
-      open $self->{fh}, '+<:raw', $input
-        or LOGCROAK "open('$input'): $OS_ERROR";
-   } ## end else [ if (ref($input) eq 'GLOB')]
-   $self->{reader} = Data::Embed::Reader->new($input, @_);
+      open $self->{fh}, '+<:raw', $output
+        or LOGCROAK "open('$output'): $OS_ERROR";
+   } ## end else [ if (ref($output) eq 'GLOB')]
+   $self->{reader} = Data::Embed::Reader->new($output, @_);
 
    return $self;
 } ## end sub new
@@ -194,8 +194,8 @@ sub add_fh {
    binmode $input_fh, ':raw'
      or LOGCROAK "binmode(): $OS_ERROR";
 
-   my $reader      = $self->{reader};
-   DEBUG "reader: ", sub { require Data::Dumper; Data::Dumper::Dumper($reader) };
+   my $output_fh   = $self->{fh};
+   my $reader      = Data::Embed::Reader->new($output_fh);
    my $index       = $reader->_index();
    my $index_fh    = $index->fh();
    my @index_lines = <$index_fh>;
@@ -205,9 +205,8 @@ sub add_fh {
    else {
       pop @index_lines;    # get rid of TERMINATOR
    }
-   $reader->reset();
+   DEBUG "reader: ", sub { require Data::Dumper; Data::Dumper::Dumper($reader) };
 
-   my $output_fh = $self->{fh};    # ready...
    seek $output_fh, $index->{offset}, SEEK_SET;    # set...
    my $data_length = 0;                            # go!
    while (!eof $input_fh) {
