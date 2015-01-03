@@ -8,12 +8,12 @@ use English qw< -no_match_vars >;
 use Exporter qw< import >;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
-our @EXPORT_OK = qw< writer reader embed embedded >;
+our @EXPORT_OK = qw< writer reader embed embedded generate_module_from_file >;
 our @EXPORT = ();
 our %EXPORT_TAGS = (
    all => \@EXPORT_OK,
    reading => [ qw< reader embedded > ],
-   writing => [ qw< writer embed    > ],
+   writing => [ qw< writer embed    generate_module_from_file > ],
 );
 
 =head1 FUNCTIONS
@@ -112,6 +112,11 @@ sub embedded {
    my $reader = reader(shift)
       or LOGCROAK 'could not get the writer object';
    return $reader->files();
+}
+
+sub generate_module_from_file {
+   require Data::Embed::OneFileAsModule;
+   goto &Data::Embed::OneFileAsModule::generate_module_from_file;
 }
 
 1;

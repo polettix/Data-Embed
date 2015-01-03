@@ -7,6 +7,8 @@ use strict;
 use warnings;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
+{
+   no strict 'refs';
 #__TEMPLATE_BEGIN__
 {
    my $data     = \*{__PACKAGE__ . '::DATA'};
@@ -36,6 +38,7 @@ use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
    } ## end sub get_data
 }
 #__TEMPLATE_END__
+}
 
 sub _get_output_fh {
    my $output = shift;
@@ -125,20 +128,22 @@ sub generate_module_from_file {
    my ($out_fh, $outref) = _get_output_fh($args{output});
 
    # package name
-   print {$out_fh}, "package: $args{package};\n";
+   print {$out_fh} "package $args{package};\n";
 
    # package code
    my $seen_start;
    INPUT:
    while (<$template_fh>) {
-      $seen_start ||= m{\A \#__TEMPLATE_BEGIN__ \s*\z}mxs
-         or next INPUT;
+      if (! $seen_start) {
+         $seen_start = m{\A \#__TEMPLATE_BEGIN__ \s*\z}mxs;
+         next INPUT;
+      }
       last INPUT if m{\A \#__TEMPLATE_END__ \s*\z}mxs;
       print {$out_fh} $_;
    }
 
    # package code ending
-   print {$out_fh} "\n;1;\n__DATA__\n";
+   print {$out_fh} "\n1;\n__DATA__\n";
 
    # file contents
    while (! eof $in_fh) {

@@ -8,6 +8,7 @@ use Pod::Usage qw< pod2usage >;
 use Getopt::Long qw< :config gnu_getopt >;
 use English qw< -no_match_vars >;
 
+use lib 'lib';
 use Data::Embed qw< :all >;
 use Log::Log4perl::Tiny qw< :easy >;
 Log::Log4perl->easy_init({level => $INFO, layout => '[%d %-5p] %m%n'});
@@ -19,6 +20,9 @@ GetOptions(
      usage! help! man! version!
      data|text|d=s
      file|filename|f=s
+     output|o=s
+     output_from_package|output-from-package|auto-output|a!
+     package|module|p|m=s
      name|n=s
      output|o=s
      >
@@ -144,6 +148,36 @@ sub action_extract {
    }
 
    return;
+}
+
+sub action_modularize {
+   my ($cfg, $argv) = @_;
+
+   defined(my $package = $cfg->{package})
+      or pod2usage(
+         message   => "action modularize requires package name",
+         -verbose  => 99,
+         -sections => 'USAGE',
+      );
+   my %output = exists $cfg->{output} ? (output => $cfg->{output}) : ();
+   $output{output_from_package} = $cfg->{output_from_package};
+
+   my %input;
+   if (exists $cfg->{data}) {
+      $input{data} = $cfg->{data};
+   }
+   elsif (exists $cfg->{file}) {
+      $input{filename} = $cfg->{file};
+   }
+   elsif ((! scalar @$argv) || ($argv->[0] eq '-')) {
+      $input{fh} = \*STDIN;
+      binmode $input{fh};
+   }
+   else {
+      $input{filename} = $argv->[0];
+   }
+
+   return generate_module_from_file(package => $package, %input, %output);
 }
 
 __END__
