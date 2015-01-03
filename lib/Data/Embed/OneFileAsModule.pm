@@ -1,4 +1,7 @@
 package Data::Embed::OneFileAsModule;
+
+# ABSTRACT: generate a Perl module for carrying data
+
 use Exporter qw< import >;
 @EXPORT_OK   = (qw< generate_module_from_file >);
 @EXPORT      = ();
