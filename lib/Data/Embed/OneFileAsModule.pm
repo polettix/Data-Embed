@@ -7,6 +7,34 @@ use strict;
 use warnings;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
+
+=head1 FUNCTIONS
+
+=head2 get_fh
+
+get a filehandle to read the data. The filehandle will be
+put at the start of the data, you should not C<seek>
+without taking into account that this is not at
+position 0.
+
+This function is preserved in the generated module so that
+it is available to get the embedded data.
+
+=head2 get_data
+
+get a string with the full data provided by the carried by
+the module.
+
+This function is preserved in the generated module so that
+it is available to get the embedded data.
+
+=head2 generate_module_from_file
+
+generate the data file contents. See full documentation
+at L</Data::Embed::generate_module_from_file>.
+
+=cut
+
 {
    no strict 'refs';
 #__TEMPLATE_BEGIN__
@@ -154,7 +182,9 @@ sub generate_module_from_file {
    }
 
    return $$outref if $outref;
+   return;
 } ## end sub generate_module_from_file
 
 1;
-__DATA__
+__END__
+

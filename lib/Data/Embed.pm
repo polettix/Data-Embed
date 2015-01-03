@@ -90,6 +90,84 @@ L<Data::Embed::Writer>.
 This is a convenience wrapper around the constructor for
 L<Data::Embed::Reader>.
 
+=head2 B<< generate_module_from_file >>
+
+   # when %args includes details for an output channel
+   generate_module_from_file(%args);
+
+   # in case no output is provided in %args:
+   my $text = generate_module_from_file(%args);
+
+Generate a module's file contents from a file. The module contains code
+of a package that has code to read the included data. Arguments are:
+
+=over
+
+=item package
+
+the name of the package that will be put into the module. This
+is a mandatory parameter.
+
+=item output
+
+the output channel. If not present, the output will be provided as
+a string returned by the function, otherwise you can provide
+
+=over
+
+=item *
+
+a filehandle where the output will be printed
+
+=item *
+
+a reference to a scalar (it will be filled with the contents)
+
+=item *
+
+the C<-> string, in which case the output will be printed
+to STDOUT
+
+=item *
+
+a filename
+
+=back
+
+=item output_from_package
+
+if this key is present and true, the C<output> parameters is
+overridden and generated automatically from the package name
+provided in key C<package>. The generated file will assume that
+the file is contained in the I<normal> path under a C<lib>
+directory, e.g. if the package name is C<Some::Module> then
+the generated filename will be C<lib/Some/Module.pm>.
+
+=item fh
+
+a filehandle where data will be read from
+
+=item filename
+
+the input will be taken from the provided filename
+
+=item dataref
+
+the input will be taken from the scalar pointed by the
+reference
+
+=item data
+
+the input is taken from the scalar provided with the data key
+
+=back
+
+Input keys are C<fh>, C<filename>, C<dataref> and C<data>. In case
+multiple of them are present, they will be considered in the
+order specified.
+
+
+
 =cut
 
 sub writer {
