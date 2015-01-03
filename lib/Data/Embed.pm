@@ -49,7 +49,7 @@ exausted starting from its current position
 
 a filename or a reference to a scalar where data will be read from
 
-=item c<data>
+=item C<data>
 
 a scalar from where data will be read. If you have a huge amount of
 data, it's better to use the C<filename> key above passing a reference
