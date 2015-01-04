@@ -17,8 +17,8 @@ GetOptions(
    \%config,
    qw<
      usage! help! man! version!
-     data|text|d=s
-     file|filename|f=s
+     data|text|d=s@
+     filename|file|f=s@
      name|n=s
      output|o=s
      output_from_package|output-from-package|auto-output|a!
@@ -63,22 +63,35 @@ sub action_add {
          -sections => 'USAGE',
       );
 
-   my $name = $cfg->{name};
-   my $input;
+   my %args = (output => $target);
+   $args{input} = $target if -e $target;
+   my $writer = writer(%args);
+
    if (exists $cfg->{data}) {
-      return embed($target, name => $name, data => $cfg->{data});
+      for my $item (@{$cfg->{data}}) {
+         my ($name, $data) = $item =~ m{\A (?: ((?:\\. | [^\\:])*) :)? (.*) \z}mxs;
+         if (defined $name) {
+            $name =~ s{\\(.)}{$1}gmxs;
+         }
+         else {
+            ($name, $data) = ('', $item);
+         }
+         $writer->add_data($name, $data);
+      }
    }
-   elsif (exists $cfg->{file}) {
-      $input = $cfg->{file};
+   if (exists $cfg->{filename}) {
+      for my $item (@{$cfg->{filename}}) {
+         $writer->add_file($item, $item);
+      }
    }
-   elsif ((! scalar @$argv) || ($argv->[0] eq '-')) {
-      return embed($target, name => $name, fh => \*STDIN);
+   if (@$argv) {
+      for my $item (@$argv) {
+         $writer->add(name => $item, input => $item);
+      }
    }
-   else {
-      $input = $argv->[0];
-   }
-   $name = $input unless defined $name;
-   return embed($target, name => $name, filename => $input);
+
+   $writer->write_index();
+   return;
 }
 
 sub action_list {
