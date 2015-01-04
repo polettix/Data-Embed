@@ -181,9 +181,13 @@ sub reader {
 }
 
 sub embed {
-   my $writer = writer(shift)
+   my %args = (@_ && ref($_[0])) ? %{$_[0]} : @_;
+
+   my %constructor_args = map { $_ => delete $args{$_} } qw< input output >;
+   my $writer = writer(%constructor_args)
       or LOGCROAK 'could not get the writer object';
-   return $writer->add(@_);
+
+   return $writer->add(%args);
 }
 
 sub embedded {
