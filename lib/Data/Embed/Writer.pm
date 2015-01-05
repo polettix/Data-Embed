@@ -143,7 +143,7 @@ sub __output_for_new {
    $self->{output_fh} = $output;
    $self->{output_type} = 'filehandle';
    $self->{output_same_as_input} = ($self->{input_type} eq 'filehandle')
-      && (refaddr($output) eq refaddr($self->{input}));
+      && (refaddr($output) eq refaddr($self->{input_fh}));
    return $self;
 }
 
