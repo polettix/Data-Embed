@@ -43,6 +43,7 @@ my $testfile = __FILE__ . '.test-container';
       '269 anoth%25%25er',
       "Data::Embed/index/end\n";
    is $generated, $contents, 'generated file as expected';
+   unlink $testfile;
 }
 
 # undefined input
@@ -71,6 +72,7 @@ my $testfile = __FILE__ . '.test-container';
       '269 anoth%25%25er',
       "Data::Embed/index/end\n";
    is $generated, $contents, 'generated file as expected';
+   unlink $testfile;
 }
 
 # a previous input file, same as output file
@@ -98,6 +100,7 @@ my $testfile = __FILE__ . '.test-container';
    is $size, 388, 'output file size';
    my $generated = read_file($testfile);
    is $generated, $contents, 'generated file as expected';
+   unlink $testfile;
 }
 
 # a previous input file, different from output file
@@ -131,6 +134,7 @@ my $testfile = __FILE__ . '.test-container';
    is $generated, $contents, 'generated file as expected';
 
    unlink $inputfile;
+   unlink $testfile;
 }
 
 # previous input from a scalar reference
@@ -160,6 +164,7 @@ my $testfile = __FILE__ . '.test-container';
    is $size, 388, 'output file size';
    my $generated = read_file($testfile);
    is $generated, $contents, 'generated file as expected';
+   unlink $testfile;
 }
 
 # previous input from a file handle, different from output file
@@ -196,6 +201,7 @@ my $testfile = __FILE__ . '.test-container';
    is $generated, $contents, 'generated file as expected';
 
    unlink $inputfile;
+   unlink $testfile;
 }
 
 # previous input from a file handle, different from output file
@@ -231,6 +237,7 @@ my $testfile = __FILE__ . '.test-container';
    is $generated, $contents, 'generated file as expected';
 
    unlink $inputfile;
+   unlink $testfile;
 }
 
 done_testing();
