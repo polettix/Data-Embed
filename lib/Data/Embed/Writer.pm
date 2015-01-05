@@ -28,8 +28,8 @@ pairs. Acceptable keys are:
 
 =item C<output>
 
-Optional parameter, where to send output data. If not present,
-or set to the string C<->, then standard output will be considered.
+Optional parameter, where to send output data. If not present, undefined,
+empty or set to the string C<->, then standard output will be considered.
 
 If a filehandle is provided, it is expected to be seekable and will also
 be C<binmode>-d in C<:raw> mode.
@@ -77,7 +77,7 @@ sub __output_for_new {
    $self->{output_same_as_input} = 0; # by default
 
    # The simple stuff: not present/defined, or the classical "-" string
-   if ((! defined($output)) || ($output eq '-')) {
+   if ((! defined($output)) || (! length($output)) || ($output eq '-')) {
       DEBUG $package, "::__output_for_new(): output to STDOUT";
       open my $fh, '>&', \*STDOUT
          or LOGCROAK "dup(): $OS_ERROR";
