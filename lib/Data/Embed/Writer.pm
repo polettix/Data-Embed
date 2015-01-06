@@ -458,6 +458,17 @@ sub add_fh {
    return $self;
 }
 
+=head2 B<< write_index >>
+
+Write the index of the contained sections out to the output channel.
+Doing this invalidates the object, so you should not perform any
+further action after.
+
+This gets automatically called upon object destruction, if not previously
+called.
+
+=cut
+
 sub write_index {
    my $self = shift;
    my ($output_fh, $index) = @{$self}{qw< output_fh index >};
