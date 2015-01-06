@@ -1,4 +1,5 @@
 {{$NEXT}}
+   - new D::E::Writer and writer() implementation (sanitized)
    - added documentation for data-embed script
    - documentation bugfixes
 
