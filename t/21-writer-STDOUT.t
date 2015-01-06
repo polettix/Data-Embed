@@ -147,7 +147,7 @@ for my $output ('missing', '', undef, '-') {
 
    my $inputfile = $testfile . '.input';
    write_file($inputfile, $prefix);
-   my $size = -s $inputfile;
+   $size = -s $inputfile;
    is $size, length($prefix), 'created starting input file';
 
    open my $ifh, '<', $inputfile;
