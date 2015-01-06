@@ -91,10 +91,12 @@ sub contents {
    my $fh   = $self->fh();
    my $current = tell $fh;
    seek $fh, 0, SEEK_SET;
-   local $/;
-   my $retval = <$fh>;
+
+   local $/ = wantarray() ? $/ : undef;
+   my @retval = <$fh>;
    seek $fh, $current, SEEK_SET;
-   return $retval;
+   return @retval if wantarray();
+   return $retval[0];
 } ## end sub contents
 
 =head2 B<< name >>

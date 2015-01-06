@@ -1,5 +1,6 @@
 {{$NEXT}}
    - added documentation for data-embed script
+   - documentation bugfixes
 
 0.2_01    2015-01-03 16:41:07 Europe/Rome
    - added package for embedding one file in a Perl module
