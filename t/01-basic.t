@@ -59,4 +59,6 @@ my $testfile = __FILE__ . '.test1';
    } 'reading from filehandle lived';
    is $first_line, "binary data:\n", 'first line of second file';
    is $first_line . $rest, $sample2, 'contents of second file';
+
+   unlink $testfile;
 }
