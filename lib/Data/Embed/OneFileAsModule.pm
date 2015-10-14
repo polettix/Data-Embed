@@ -73,13 +73,14 @@ at L<Data::Embed/generate_module_from_file>.
 
 sub _get_output_fh {
    my $output = shift;
+   my $binmode = shift || ':raw';
 
    # if no output is defined, we will return a scalar with data
    if (! defined $output) {
       my $buffer = '';
       open my $fh, '>', \$buffer
          or LOGCROAK "open() on (scalar ref): $OS_ERROR";
-      binmode $fh;
+      binmode $fh, $binmode;
       return ($fh, \$buffer);
    }
 
@@ -87,7 +88,7 @@ sub _get_output_fh {
    if ($output eq '-') {
       open my $fh, '>&', \*STDOUT        # dup()-ing
          or LOGCROAK "dup(): $OS_ERROR";
-      binmode $fh;
+      binmode $fh, $binmode;
       return $fh;
    }
 
@@ -95,7 +96,7 @@ sub _get_output_fh {
    if (! $ro) { # output is a simple filename
       open my $fh, '>', $output
          or LOGCROAK "open('$output'): $OS_ERROR";
-      binmode $fh;
+      binmode $fh, $binmode;
       return $fh;
    }
 
@@ -107,7 +108,7 @@ sub _get_output_fh {
    # otherwise, open a handle to write in the scalar
    open my $fh, '>', $output
       or LOGCROAK "open('$output') (scalar ref): $OS_ERROR";
-   binmode $fh;
+   binmode $fh, $binmode;
    return $fh;
 }
 
@@ -157,7 +158,7 @@ sub generate_module_from_file {
 
    ($args{output} = 'lib/' . $args{package} . '.pm') =~ s{::}{/}gmxs
       if $args{output_from_package};
-   my ($out_fh, $outref) = _get_output_fh($args{output});
+   my ($out_fh, $outref) = _get_output_fh($args{output}, $args{binmode});
 
    # package name
    print {$out_fh} "package $args{package};\n";
