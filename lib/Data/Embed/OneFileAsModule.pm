@@ -79,6 +79,7 @@ sub _get_output_fh {
       my $buffer = '';
       open my $fh, '>', \$buffer
          or LOGCROAK "open() on (scalar ref): $OS_ERROR";
+      binmode $fh;
       return ($fh, \$buffer);
    }
 
