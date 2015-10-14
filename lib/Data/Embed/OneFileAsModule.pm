@@ -34,7 +34,7 @@ it is available to get the embedded data.
 =head2 generate_module_from_file
 
 generate the data file contents. See full documentation
-at L</Data::Embed::generate_module_from_file>.
+at L<Data::Embed/generate_module_from_file>.
 
 =cut
 
