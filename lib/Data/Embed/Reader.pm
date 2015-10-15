@@ -59,7 +59,7 @@ sub new {
 Get the list of files embedded into the main file.
 
 In list context, it returns a list of L<Data::Embed::File> objects,
-each represeting a different embedded file.
+each representing a different embedded file.
 
 In scalar context, it returns an anonymous array with the list
 above.
