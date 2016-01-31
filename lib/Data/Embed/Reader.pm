@@ -1,7 +1,5 @@
 package Data::Embed::Reader;
 
-# ABSTRACT: embed arbitrary data in a file - reader class
-
 use strict;
 use warnings;
 use English qw< -no_match_vars >;
@@ -11,28 +9,12 @@ use Storable qw< dclone >;
 use Data::Embed::File;
 use Data::Embed::Util qw< :constants unescape >;
 
-=head1 METHODS
-
-=head2 new
-
-Constructor. Takes one positional parameter, that can be either
-a filename or a filehandle (in particular, a GLOB).
-
-If a filename is provided, is it opened for read in C<:raw> mode; an
-exception will be thrown if errors arise.
-
-If a filehandle is provided, it is expected to be seekable and will also
-be C<binmode>-d in C<:raw> mode; again, an exception is thrown in case
-of errors.
-
-=cut
-
 sub new {
    my $package = shift;
    my $input   = shift;
 
    # Undocumented, keep additional parameters around...
-   my %args    = (scalar(@_) && ref($_[0])) ? %{$_[0]} : @_;
+   my %args = (scalar(@_) && ref($_[0])) ? %{$_[0]} : @_;
    my $self = bless {args => \%args}, $package;
 
    # If a GLOB, just assign a default filename for logs and set
@@ -41,55 +23,35 @@ sub new {
       DEBUG $package, ': input is a GLOB';
       $self->{filename} = '<GLOB>';
       binmode $input, ":raw"
-         or LOGCROAK "binmode() to ':raw' failed";
-      $self->{fh}       = $input;
-   }
-   else { # otherwise... it's a filename
-      DEBUG $package, ': input is a file or other thing that can be open-ed';
+        or LOGCROAK "binmode() to ':raw' failed";
+      $self->{fh} = $input;
+   } ## end if (ref($input) eq 'GLOB')
+   else {    # otherwise... it's a filename
+      DEBUG $package,
+        ': input is a file or other thing that can be open-ed';
       $self->{filename} = $input;
       open $self->{fh}, '<:raw', $input
         or LOGCROAK "open('$input'): $OS_ERROR";
-   }
+   } ## end else [ if (ref($input) eq 'GLOB')]
 
    return $self;
 } ## end sub new
-
-=head2 B<< files >>
-
-Get the list of files embedded into the main file.
-
-In list context, it returns a list of L<Data::Embed::File> objects,
-each representing a different embedded file.
-
-In scalar context, it returns an anonymous array with the list
-above.
-
-=cut
 
 sub files {
    my $files = shift->_ensure_index()->{files};
    return wantarray() ? @$files : $files;
 }
 
-=head2 B<< reset >>
-
-reset the object's cached data, in particular the list of files. This
-might come handy in case you update the file and you want to re-read
-the index.
-
-=cut
-
 sub reset {
    my $self = shift;
    delete $self->{$_} for qw< files index >;
    return $self;
-} ## end sub reset
-
+}
 
 ######## PRIVATE METHODS ##############################################
 
 # Get the index of the embedded files as a L<Data::Embed::File> object.
-# You should normally not need this index, because it is parsed 
+# You should normally not need this index, because it is parsed
 sub _index { return shift->_ensure_index()->{_index}; }
 
 sub _ensure_index {
@@ -99,7 +61,7 @@ sub _ensure_index {
    if (!exists $self->{files}) {
       my $index = $self->_load_index()
         || {
-         files => [],
+         files  => [],
          _index => Data::Embed::File->new(
             fh       => $self->{fh},
             filename => $self->{filename},
@@ -180,18 +142,18 @@ sub _load_index {
 } ## end sub _load_index
 
 sub __size {
-   my $fh = shift;
+   my $fh   = shift;
    my $size = -s $fh;
-   if (! defined $size) {
+   if (!defined $size) {
       DEBUG "getting size via seek";
       my $current = tell $fh;
       seek $fh, 0, SEEK_END;
       $size = tell $fh;
       DEBUG "size: $size";
       seek $fh, $current, SEEK_SET;
-   }
+   } ## end if (!defined $size)
    return $size;
-}
+} ## end sub __size
 
 # read the last section of the file, looking for the index
 sub _read_index {
@@ -285,4 +247,3 @@ sub _read {
 } ## end sub _read
 
 1;
-__END__
