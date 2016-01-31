@@ -1,6 +1,6 @@
 use strict;
 use Test::More tests => 1;
-use Template::Perlish;
+use Data::Embed;
 
 (my $filename = $INC{'Data/Embed.pm'}) =~ s{pm$}{pod};
 
