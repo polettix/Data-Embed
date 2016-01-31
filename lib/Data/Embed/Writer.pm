@@ -1,7 +1,5 @@
 package Data::Embed::Writer;
 
-# ABSTRACT: embed arbitrary data in a file - writer class
-
 use strict;
 use warnings;
 use English qw< -no_match_vars >;
@@ -11,86 +9,27 @@ use Data::Embed::Util qw< :constants escape >;
 use Fcntl qw< :seek >;
 use Scalar::Util qw< refaddr >;
 
-=head1 METHODS
-
-=head2 new
-
-Constructor.
-
-   my $w = Data::Embed::Writer->new(%args);
-   my $w = Data::Embed::Writer->new(\%args);
-
-The difference between the two forms is that you can
-pass either key-value pairs, or a hash reference with key-value
-pairs. Acceptable keys are:
-
-=over
-
-=item C<output>
-
-Optional parameter, where to send output data. If not present, undefined,
-empty or set to the string C<->, then standard output will be considered.
-
-If a filehandle is provided, it is expected to be seekable and will also
-be C<binmode>-d in C<:raw> mode.
-
-=item C<input>
-
-Optional parameters, where to get initial data:
-
-=over
-
-=item *
-
-if not present, no previous input will be considered.
-
-=item *
-
-if equal to the string C<->, the standard input will be considered
-
-=item *
-
-if equal to some other string, it will be considered a filename
-
-=item *
-
-if a reference to a scalar, it will be C<open()>ed
-
-=item *
-
-otherwise it will be considered a filehandle
-
-=back
-
-=back
-
-This method throws an exception in case of errors. Returns a new object
-in case of success.
-
-=cut
-
-
 sub __output_for_new {
-   my $self = shift;
+   my $self    = shift;
    my $package = ref $self;
-   my $output = $self->{output} = $self->{args}{output};
-   $self->{output_same_as_input} = 0; # by default
+   my $output  = $self->{output} = $self->{args}{output};
+   $self->{output_same_as_input} = 0;    # by default
 
    # The simple stuff: not present/defined, or the classical "-" string
-   if ((! defined($output)) || (! length($output)) || ($output eq '-')) {
+   if ((!defined($output)) || (!length($output)) || ($output eq '-')) {
       DEBUG $package, "::__output_for_new(): output to STDOUT";
       open my $fh, '>&', \*STDOUT
-         or LOGCROAK "dup(): $OS_ERROR";
+        or LOGCROAK "dup(): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode(\\*STDOUT): $OS_ERROR";
+        or LOGCROAK "binmode(\\*STDOUT): $OS_ERROR";
       $self->{output_name} = '<STDOUT>';
-      $self->{output_fh} = $fh;
+      $self->{output_fh}   = $fh;
       $self->{output_type} = 'filehandle';
       return $self;
-   }
+   } ## end if ((!defined($output)...))
 
    my $oref = ref $output;
-   if (! $oref) { # filename
+   if (!$oref) {    # filename
       DEBUG $package, '::__output:for_new(): output to a file';
       $self->{output_type} = 'file';
       $self->{output_name} = $output;
@@ -98,113 +37,115 @@ sub __output_for_new {
       # same file as input? If yes, do not clobber
       if (($self->{input_type} eq 'file') && ($output eq $self->{input})) {
          open my $fh, '+<', $output
-            or LOGCROAK "open('$output'): $OS_ERROR";
+           or LOGCROAK "open('$output'): $OS_ERROR";
          binmode $fh
-            or LOGCROAK "binmode('$output'): $OS_ERROR";
-         $self->{output_fh} = $fh;
+           or LOGCROAK "binmode('$output'): $OS_ERROR";
+         $self->{output_fh}            = $fh;
          $self->{output_same_as_input} = 1;
          return $self;
-      }
+      } ## end if (($self->{input_type...}))
 
       open my $fh, '>', $output
-         or LOGCROAK "open('$output'): $OS_ERROR";
+        or LOGCROAK "open('$output'): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode('$output'): $OS_ERROR";
+        or LOGCROAK "binmode('$output'): $OS_ERROR";
       $self->{output_fh} = $fh;
       return $self;
-   }
+   } ## end if (!$oref)
 
-   if ($oref eq 'SCALAR') { # reference to a scalar, similar to filename
+   if ($oref eq 'SCALAR') {    # reference to a scalar, similar to filename
       DEBUG $package, '::__output:for_new(): output to a scalar ref';
       $self->{output_type} = 'scalar-ref';
       $self->{output_name} = "{$output}";
 
       # same file as input? If yes, do not clobber
-      if (($self->{input_type} eq 'scalar-ref') && (refaddr($output) eq refaddr($self->{input}))) {
+      if (  ($self->{input_type} eq 'scalar-ref')
+         && (refaddr($output) eq refaddr($self->{input})))
+      {
          open my $fh, '+<', $output
-            or LOGCROAK "open('$output'): $OS_ERROR";
+           or LOGCROAK "open('$output'): $OS_ERROR";
          binmode $fh
-            or LOGCROAK "binmode('$output'): $OS_ERROR";
-         $self->{output_fh} = $fh;
+           or LOGCROAK "binmode('$output'): $OS_ERROR";
+         $self->{output_fh}            = $fh;
          $self->{output_same_as_input} = 1;
          return $self;
-      }
+      } ## end if (($self->{input_type...}))
 
       open my $fh, '>', $output
         or LOGCROAK "open('$output'): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode('$output'): $OS_ERROR";
+        or LOGCROAK "binmode('$output'): $OS_ERROR";
       $self->{output_fh} = $fh;
       return $self;
-   }
+   } ## end if ($oref eq 'SCALAR')
 
    # Otherwise, we will have to assume that it is a filehandle
-   $self->{output_name} = '<HANDLE>';
-   $self->{output_fh} = $output;
-   $self->{output_type} = 'filehandle';
+   $self->{output_name}          = '<HANDLE>';
+   $self->{output_fh}            = $output;
+   $self->{output_type}          = 'filehandle';
    $self->{output_same_as_input} = ($self->{input_type} eq 'filehandle')
-      && (refaddr($output) eq refaddr($self->{input_fh}));
+     && (refaddr($output) eq refaddr($self->{input_fh}));
    return $self;
-}
+} ## end sub __output_for_new
 
 sub __input_for_new {
-   my $self = shift;
+   my $self    = shift;
    my $package = ref $self;
-   my $input = $self->{input} = $self->{args}{input};
+   my $input   = $self->{input} = $self->{args}{input};
 
    # if not defined, it just does not exist
-   if (! defined($input)) {
+   if (!defined($input)) {
       DEBUG $package, "::__input_for_new(): no input";
       $self->{input_name} = '*undef*';
-      $self->{input_fh} = undef;
+      $self->{input_fh}   = undef;
       $self->{input_type} = 'undef';
       return $self;
-   }
+   } ## end if (!defined($input))
 
    # the classical "-" string
    if ($input eq '-') {
       DEBUG $package, "::__input_for_new(): input from STDIN";
       open my $fh, '<&', \*STDIN
-         or LOGCROAK "dup(): $OS_ERROR";
+        or LOGCROAK "dup(): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode(\\*STDIN): $OS_ERROR";
+        or LOGCROAK "binmode(\\*STDIN): $OS_ERROR";
       $self->{input_name} = '<STDIN>';
-      $self->{input_fh} = $fh;
+      $self->{input_fh}   = $fh;
       $self->{input_type} = 'filehandle';
       return $self;
-   }
+   } ## end if ($input eq '-')
 
    my $iref = ref $input;
-   if (! $iref) { # filename
+   if (!$iref) {    # filename
       DEBUG $package, '::__input:for_new(): input from file';
       open my $fh, '<', $input
-         or LOGCROAK "open('$input'): $OS_ERROR";
+        or LOGCROAK "open('$input'): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode('$input'): $OS_ERROR";
+        or LOGCROAK "binmode('$input'): $OS_ERROR";
       $self->{input_name} = $input;
-      $self->{input_fh} = $fh;
+      $self->{input_fh}   = $fh;
       $self->{input_type} = 'file';
       return $self;
-   }
+   } ## end if (!$iref)
 
-   if ($iref eq 'SCALAR') { # reference to a scalar, similar to filename
+   if ($iref eq 'SCALAR') {    # reference to a scalar, similar to filename
       DEBUG $package, '::__input:for_new(): input from a scalar ref';
       open my $fh, '<', $input
         or LOGCROAK "open('$input'): $OS_ERROR";
       binmode $fh
-         or LOGCROAK "binmode('$input'): $OS_ERROR";
+        or LOGCROAK "binmode('$input'): $OS_ERROR";
       $self->{input_name} = "{$input}";
-      $self->{input_fh} = $fh;
+      $self->{input_fh}   = $fh;
       $self->{input_type} = 'scalar-ref';
       return $self;
-   }
+   } ## end if ($iref eq 'SCALAR')
 
    # Otherwise, we will have to assume that it is a filehandle
    $self->{input_name} = '<HANDLE>';
-   $self->{input_fh} = $input;
+   $self->{input_fh}   = $input;
    $self->{input_type} = 'filehandle';
    return $self;
-}
+} ## end sub __input_for_new
 
 sub new {
    my $package = shift;
@@ -221,25 +162,26 @@ sub new {
 
    # if there is an input, transfer to the output if it is the case
    if ($self->{input_fh}) {
-      if ($self->{output_same_as_input}) {  # don't copy, assume seekable input
+      if ($self->{output_same_as_input})
+      {    # don't copy, assume seekable input
          my $reader = Data::Embed::Reader->new($self->{input_fh});
-         my $ifile = $reader->_index(); # private method called
+         my $ifile = $reader->_index();    # private method called
          my @index = $ifile->contents();
-         shift @index; # eliminate STARTER
-         pop   @index; # eliminate TERMINATOR
-         $self->{index} = \@index; # initialize previous index
-         # put output handle in right position
+         shift @index;                     # eliminate STARTER
+         pop @index;                       # eliminate TERMINATOR
+         $self->{index} = \@index;    # initialize previous index
+                                      # put output handle in right position
          seek $self->{output_fh}, $ifile->{offset}, SEEK_SET;
-      }
+      } ## end if ($self->{output_same_as_input...})
       else {
-         my $starter = STARTER;
+         my $starter    = STARTER;
          my $terminator = TERMINATOR;
          my (@index, $index_completed);
          my $ifh = $self->{input_fh};
          my $ofh = $self->{output_fh};
-         INPUT:
+       INPUT:
          while (<$ifh>) {
-            if (! @index) {
+            if (!@index) {
                if ($_ eq $starter) {
                   push @index, $_;
                   next INPUT;
@@ -247,8 +189,8 @@ sub new {
                else {
                   print {$ofh} $_;
                }
-            }
-            elsif (! $index_completed) { # accumulating index
+            } ## end if (!@index)
+            elsif (!$index_completed) {    # accumulating index
                if (m{\A \s* (\d+) \s+ (\S*) \s*\z}mxs) {
                   push @index, $_;
                }
@@ -256,66 +198,28 @@ sub new {
                   push @index, $_;
                   $index_completed = 1;
                }
-               else { # not a valid index, flush accumulated lines
+               else {    # not a valid index, flush accumulated lines
                   print {$ofh} @index;
-                  @index = ();
-                  $index_completed = undef; # paranoid
+                  @index           = ();
+                  $index_completed = undef;    # paranoid
                }
-            }
-            else { # accumulating and index completed, but other stuff...
-               print {$ofh} @index; # flush and reset
-               @index = ();
+            } ## end elsif (!$index_completed)
+            else {   # accumulating and index completed, but other stuff...
+               print {$ofh} @index;    # flush and reset
+               @index           = ();
                $index_completed = undef;
             }
-         }
-         shift @index; # eliminate STARTER
-         pop   @index; # eliminate TERMINATOR
-         $self->{index} = \@index; # initialize previous index
-      }
-   }
+         } ## end INPUT: while (<$ifh>)
+         shift @index;                 # eliminate STARTER
+         pop @index;                   # eliminate TERMINATOR
+         $self->{index} = \@index;     # initialize previous index
+      } ## end else [ if ($self->{output_same_as_input...})]
+   } ## end if ($self->{input_fh})
 
    # now output_fh is at the right place for new stuff!
 
    return $self;
 } ## end sub new
-
-=head2 B<< add >>
-
-Catchall method for adding a section into the target file.
-
-Expects a list of key-value pairs or a hash reference in input. The
-recognised keys are:
-
-=over
-
-=item C<name>
-
-the name to associate to the section, optionally. If missing it will
-be set to the empty string
-
-=item C<fh>
-
-the filehandle from where data should be taken. The filehandle will be
-exausted starting from its current position
-
-=item C<filename>
-
-a filename or a reference to a scalar where data will be read from
-
-=item c<data>
-
-a scalar from where data will be read. If you have a huge amount of
-data, it's better to use the C<filename> key above passing a reference
-to the scalar holding the data.
-
-=back
-
-Options C<fh>, C<filename> and C<data> are exclusive and will be considered
-in the order above (first come, first served).
-
-This method does not return anything.
-
-=cut
 
 sub add {
    my $self = shift;
@@ -325,21 +229,21 @@ sub add {
    if (defined $args{input}) {
       if ($args{input} eq '-') {
          open my $fh, '<&', \*STDIN
-            or LOGCROAK "dup(): $OS_ERROR";
+           or LOGCROAK "dup(): $OS_ERROR";
          binmode $fh
-            or LOGCROAK "binmode(\\*STDIN): $OS_ERROR";
+           or LOGCROAK "binmode(\\*STDIN): $OS_ERROR";
          $args{fh} = $fh;
-      }
+      } ## end if ($args{input} eq '-')
       else {
          my $ref = ref $args{input};
-         if ((! $ref) || ($ref eq 'SCALAR')) {
+         if ((!$ref) || ($ref eq 'SCALAR')) {
             $args{filename} = $args{input};
          }
          else {
             $args{fh} = $args{input};
          }
-      }
-   }
+      } ## end else [ if ($args{input} eq '-')]
+   } ## end if (defined $args{input...})
 
    if (defined $args{fh}) {
       return $self->add_fh(@args{qw< name fh >});
@@ -353,25 +257,6 @@ sub add {
    LOGCROAK "add() needs some input";
    return;    # unreached
 } ## end sub add
-
-=head2 B<< add_file >>
-
-Add one section from either a file or a reference to a scalar holding the
-data (whatever suits C<open> anyway).
-
-Takes two positional parameters:
-
-=over
-
-=item * name of the section (set to the empty string if undefined)
-
-=item * filename or reference to the data
-
-=back
-
-Returns nothing.
-
-=cut
 
 sub add_file {
    my ($self, $name, $filename) = @_;
@@ -390,58 +275,21 @@ sub add_file {
    return $self->add_fh($name, $fh);
 } ## end sub add_file
 
-=head2 B<< add_data >>
-
-Add one section from a scalar holding the data.
-
-Takes two positional parameters:
-
-=over
-
-=item * name of the section (set to the empty string if undefined)
-
-=item * scalar holding the data to be added
-
-=back
-
-Returns nothing.
-
-=cut
-
 sub add_data {
    my ($self, $name) = @_;
    return $self->add_file($name, \$_[2]);
 }
 
-=head2 B<< add_fh >>
-
-Add one section from a filehandle holding the data. The filehandle
-will be read from its current position up to the end.
-
-Takes two positional parameters:
-
-=over
-
-=item * name of the section (set to the empty string if undefined)
-
-=item * filehandle
-
-=back
-
-Returns nothing.
-
-=cut
-
 sub add_fh {
    my ($self, $name, $input_fh) = @_;
 
    my $output_fh   = $self->{output_fh};
-   my $data_length = 0;                            # go!
+   my $data_length = 0;                    # go!
    while (!eof $input_fh) {
       my $buffer;
       defined(my $nread = read $input_fh, $buffer, 4096)
         or LOGCROAK "read(): $OS_ERROR";
-      last unless $nread;                          # safe side?
+      last unless $nread;                  # safe side?
       print {$output_fh} $buffer
         or LOGCROAK "print(): $OS_ERROR";
       $data_length += $nread;
@@ -456,27 +304,16 @@ sub add_fh {
    push @{$self->{index}}, sprintf "%d %s\n", $data_length, escape($name);
 
    return $self;
-}
-
-=head2 B<< write_index >>
-
-Write the index of the contained sections out to the output channel.
-Doing this invalidates the object, so you should not perform any
-further action after.
-
-This gets automatically called upon object destruction, if not previously
-called.
-
-=cut
+} ## end sub add_fh
 
 sub write_index {
    my $self = shift;
    my ($output_fh, $index) = @{$self}{qw< output_fh index >};
    print {$output_fh} STARTER, @$index, TERMINATOR
-      or LOGCROAK "print(): $OS_ERROR";
+     or LOGCROAK "print(): $OS_ERROR";
    delete $self->{$_} for qw< output_fh index >;
    return;
-} ## end sub add_fh
+} ## end sub write_index
 
 sub DESTROY {
    my $self = shift;
@@ -485,4 +322,3 @@ sub DESTROY {
 }
 
 1;
-__END__
