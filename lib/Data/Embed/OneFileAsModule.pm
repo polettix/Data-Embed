@@ -137,7 +137,6 @@ sub generate_module_from_file {
    my $seen_start;
  INPUT:
    while (<$template_fh>) {
-141:	Note: be sure you want '=' instead of '=~' here
       if (!$seen_start) {
          $seen_start = m{\A \#__TEMPLATE_BEGIN__ \s*\z}mxs;
          next INPUT;

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use English qw< -no_match_vars >;
 use Exporter qw< import >;
+{ our $VERSION = '0.22'; }
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
 our @EXPORT_OK =
