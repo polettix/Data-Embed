@@ -147,9 +147,75 @@ sub __input_for_new {
    return $self;
 } ## end sub __input_for_new
 
+sub _transfer_input {
+   my $self = shift;
+   if (!$self->{input_transferred}) {
+
+      # if there is an input, transfer to the output if it is the case
+      if ($self->{input_fh}) {
+         if ($self->{output_same_as_input})
+         {    # don't copy, assume seekable input
+            my $reader = Data::Embed::Reader->new($self->{input_fh});
+            my $ifile = $reader->_index();    # private method called
+            my @index = $ifile->contents();
+            shift @index;                     # eliminate STARTER
+            pop @index;                       # eliminate TERMINATOR
+            $self->{index} = \@index;    # initialize previous index
+                                         # put out handle in right position
+            seek $self->{output_fh}, $ifile->{offset}, SEEK_SET;
+         } ## end if ($self->{output_same_as_input...})
+         else {
+            my $starter    = STARTER;
+            my $terminator = TERMINATOR;
+            my (@index, $index_completed);
+            my $ifh = $self->{input_fh};
+            my $ofh = $self->{output_fh};
+          INPUT:
+            while (<$ifh>) {
+               if (!@index) {
+                  if ($_ eq $starter) {
+                     push @index, $_;
+                     next INPUT;
+                  }
+                  else {
+                     print {$ofh} $_;
+                  }
+               } ## end if (!@index)
+               elsif (!$index_completed) {    # accumulating index
+                  if (m{\A \s* (\d+) \s+ (\S*) \s*\z}mxs) {
+                     push @index, $_;
+                  }
+                  elsif ($_ eq $terminator) {
+                     push @index, $_;
+                     $index_completed = 1;
+                  }
+                  else {    # not a valid index, flush accumulated lines
+                     print {$ofh} @index;
+                     @index           = ();
+                     $index_completed = undef;    # paranoid
+                  }
+               } ## end elsif (!$index_completed)
+               else
+               {    # accumulating and index completed, but other stuff...
+                  print {$ofh} @index;    # flush and reset
+                  @index           = ();
+                  $index_completed = undef;
+               } ## end else [ if (!@index) ]
+            } ## end INPUT: while (<$ifh>)
+            shift @index;                 # eliminate STARTER
+            pop @index;                   # eliminate TERMINATOR
+            $self->{index} = \@index;     # initialize previous index
+         } ## end else [ if ($self->{output_same_as_input...})]
+      } ## end if ($self->{input_fh})
+      $self->{input_transferred} = 1;
+   } ## end if (!$self->{input_transferred...})
+   return $self;
+} ## end sub _transfer_input
+
 sub new {
    my $package = shift;
    my %args = (scalar(@_) && ref($_[0])) ? %{$_[0]} : @_;
+   $args{transfer_input} = 1 unless exists $args{transfer_input};
 
    # Undocumented, keep additional parameters around...
    my $self = bless {args => \%args}, $package;
@@ -160,63 +226,7 @@ sub new {
    # then the output (might depend on the input)
    $self->__output_for_new();
 
-   # if there is an input, transfer to the output if it is the case
-   if ($self->{input_fh}) {
-      if ($self->{output_same_as_input})
-      {    # don't copy, assume seekable input
-         my $reader = Data::Embed::Reader->new($self->{input_fh});
-         my $ifile = $reader->_index();    # private method called
-         my @index = $ifile->contents();
-         shift @index;                     # eliminate STARTER
-         pop @index;                       # eliminate TERMINATOR
-         $self->{index} = \@index;    # initialize previous index
-                                      # put output handle in right position
-         seek $self->{output_fh}, $ifile->{offset}, SEEK_SET;
-      } ## end if ($self->{output_same_as_input...})
-      else {
-         my $starter    = STARTER;
-         my $terminator = TERMINATOR;
-         my (@index, $index_completed);
-         my $ifh = $self->{input_fh};
-         my $ofh = $self->{output_fh};
-       INPUT:
-         while (<$ifh>) {
-            if (!@index) {
-               if ($_ eq $starter) {
-                  push @index, $_;
-                  next INPUT;
-               }
-               else {
-                  print {$ofh} $_;
-               }
-            } ## end if (!@index)
-            elsif (!$index_completed) {    # accumulating index
-               if (m{\A \s* (\d+) \s+ (\S*) \s*\z}mxs) {
-                  push @index, $_;
-               }
-               elsif ($_ eq $terminator) {
-                  push @index, $_;
-                  $index_completed = 1;
-               }
-               else {    # not a valid index, flush accumulated lines
-                  print {$ofh} @index;
-                  @index           = ();
-                  $index_completed = undef;    # paranoid
-               }
-            } ## end elsif (!$index_completed)
-            else {   # accumulating and index completed, but other stuff...
-               print {$ofh} @index;    # flush and reset
-               @index           = ();
-               $index_completed = undef;
-            }
-         } ## end INPUT: while (<$ifh>)
-         shift @index;                 # eliminate STARTER
-         pop @index;                   # eliminate TERMINATOR
-         $self->{index} = \@index;     # initialize previous index
-      } ## end else [ if ($self->{output_same_as_input...})]
-   } ## end if ($self->{input_fh})
-
-   # now output_fh is at the right place for new stuff!
+   $self->_transfer_input() if $args{transfer_input};
 
    return $self;
 } ## end sub new
@@ -225,38 +235,48 @@ sub add {
    my $self = shift;
    my %args = (scalar(@_) && ref($_[0])) ? %{$_[0]} : @_;
 
+   $self->_add($_)
+     for (defined($args{inputs}) ? @{$args{inputs}} : (\%args));
+
+   return $self;
+} ## end sub add
+
+sub _add {
+   my ($self, $args) = @_;
+
    # DWIM!
-   if (defined $args{input}) {
-      if ($args{input} eq '-') {
+   if (defined $args->{input}) {
+      if ($args->{input} eq '-') {
          open my $fh, '<&', \*STDIN
            or LOGCROAK "dup(): $OS_ERROR";
          binmode $fh
            or LOGCROAK "binmode(\\*STDIN): $OS_ERROR";
-         $args{fh} = $fh;
-      } ## end if ($args{input} eq '-')
+         $args->{fh} = $fh;
+      } ## end if ($args->{input} eq ...)
       else {
-         my $ref = ref $args{input};
+         my $ref = ref $args->{input};
          if ((!$ref) || ($ref eq 'SCALAR')) {
-            $args{filename} = $args{input};
+            $args->{filename} = $args->{input};
          }
          else {
-            $args{fh} = $args{input};
+            $args->{fh} = $args->{input};
          }
-      } ## end else [ if ($args{input} eq '-')]
-   } ## end if (defined $args{input...})
+      } ## end else [ if ($args->{input} eq ...)]
+   } ## end if (defined $args->{input...})
 
-   if (defined $args{fh}) {
-      return $self->add_fh(@args{qw< name fh >});
+   if (defined $args->{fh}) {
+      return $self->add_fh(@{$args}{qw< name fh >});
    }
-   elsif (defined $args{filename}) {
-      return $self->add_file(@args{qw< name filename >});
+   elsif (defined $args->{filename}) {
+      return $self->add_file(@{$args}{qw< name filename >});
    }
-   elsif (defined $args{data}) {
-      return $self->add_data(@args{qw< name data >});
+   elsif (defined $args->{data}) {
+      return $self->add_data(@{$args}{qw< name data >});
    }
+
    LOGCROAK "add() needs some input";
    return;    # unreached
-} ## end sub add
+} ## end sub _add
 
 sub add_file {
    my ($self, $name, $filename) = @_;

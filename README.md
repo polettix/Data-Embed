@@ -170,16 +170,6 @@ Whatever the context, each item in the list is a [Data::Embed::File](https://met
 object that you can use to access the embedded file data (most notably,
 you'll be probably using its `contents` or `fh` methods).
 
-## **writer**
-
-This is a convenience wrapper around the constructor for
-[Data::Embed::Writer](https://metacpan.org/pod/Data::Embed::Writer).
-
-## **reader**
-
-This is a convenience wrapper around the constructor for
-[Data::Embed::Reader](https://metacpan.org/pod/Data::Embed::Reader).
-
 ## **generate\_module\_from\_file**
 
     # when %args includes details for an output channel
@@ -236,6 +226,45 @@ of a package that has code to read the included data. Arguments are:
 Input keys are `fh`, `filename`, `dataref` and `data`. In case
 multiple of them are present, they will be considered in the order
 specified.
+
+## **reader**
+
+This is a convenience wrapper around the constructor for
+[Data::Embed::Reader](https://metacpan.org/pod/Data::Embed::Reader).
+
+## **reassemble**
+
+    # when %args includes details for an output channel
+    reassemble(%args);
+
+Reassemble a target container fitting new input sequence. The available
+arguments are:
+
+- sequence
+
+    the sequence of items that have to be embedded. Each item can be:
+
+    - a [Data::Embed::File](https://metacpan.org/pod/Data::Embed::File) (e.g. coming from what you read from some other
+    file)
+    - a reference to a hash whose contents is compatible with what expected by
+    [Data::Embed::Writer::add](https://metacpan.org/pod/Data::Embed::Writer::add).
+
+- target
+
+    the target container. It can be:
+
+    - a _filehandle_
+    - a _filename_ (including `-`, that does what you mean)
+    - a _reference to a scalar_
+
+    If the file or reference to a scalar are used, it will make sure to
+    avoid clobbering. In particular, the _prefix_ data (i.e. data that is
+    not part of the list of files) will be preserved.
+
+## **writer**
+
+This is a convenience wrapper around the constructor for
+[Data::Embed::Writer](https://metacpan.org/pod/Data::Embed::Writer).
 
 # BUGS AND LIMITATIONS
 

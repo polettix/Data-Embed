@@ -71,25 +71,53 @@ recognised keys are:
 
 =over
 
+=item C<data>
+
+a scalar from where data will be read. If you have a huge amount of
+data, it's better to use the C<filename> key above passing a reference
+to the scalar holding the data.
+
+=item C<input>
+
+do-what-I-mean so that you can pass:
+
+=over
+
+=item *
+
+the string C<->, in which case standard input is assumed
+
+=item *
+
+any other string, or a reference to a scalar, in which case it is
+treated as a filename (for the reference, it is the way to "read" from
+the scalar)
+
+=item *
+
+otherwise, the input is assumed to be a filehandle
+
+=back
+
+=item C<inputs>
+
+a reference to an array containing hash references, each with fields as
+in this list, except for C<inputs> itself (i.e. this options is not
+recursive)
+
 =item C<name>
 
 the name to associate to the section, optionally. If missing it will
 be set to the empty string
 
-=item C<fh>
-
-the filehandle from where data should be taken. The filehandle will be
-exausted starting from its current position
-
 =item C<filename>
 
 a filename or a reference to a scalar where data will be read from
 
-=item c<data>
+=item C<fh>
 
-a scalar from where data will be read. If you have a huge amount of
-data, it's better to use the C<filename> key above passing a reference
-to the scalar holding the data.
+the filehandle from where data should be taken. The filehandle will be
+exausted starting from its current position
 
 =back
 

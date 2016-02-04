@@ -209,16 +209,6 @@ Whatever the context, each item in the list is a L<Data::Embed::File>
 object that you can use to access the embedded file data (most notably,
 you'll be probably using its C<contents> or C<fh> methods).
 
-=head2 B<< writer >>
-
-This is a convenience wrapper around the constructor for
-L<Data::Embed::Writer>.
-
-=head2 B<< reader >>
-
-This is a convenience wrapper around the constructor for
-L<Data::Embed::Reader>.
-
 =head2 B<< generate_module_from_file >>
 
    # when %args includes details for an output channel
@@ -295,6 +285,70 @@ Input keys are C<fh>, C<filename>, C<dataref> and C<data>. In case
 multiple of them are present, they will be considered in the order
 specified.
 
+=head2 B<< reader >>
+
+This is a convenience wrapper around the constructor for
+L<Data::Embed::Reader>.
+
+=head2 B<< reassemble >>
+
+   # when %args includes details for an output channel
+   reassemble(%args);
+
+Reassemble a target container fitting new input sequence. The available
+arguments are:
+
+=over
+
+=item sequence
+
+the sequence of items that have to be embedded. Each item can be:
+
+=over
+
+=item *
+
+a L<Data::Embed::File> (e.g. coming from what you read from some other
+file)
+
+=item *
+
+a reference to a hash whose contents is compatible with what expected by
+L<Data::Embed::Writer::add>.
+
+=back
+
+=item target
+
+the target container. It can be:
+
+=over
+
+=item *
+
+a I<filehandle>
+
+=item *
+
+a I<filename> (including C<->, that does what you mean)
+
+=item *
+
+a I<reference to a scalar>
+
+=back
+
+If the file or reference to a scalar are used, it will make sure to
+avoid clobbering. In particular, the I<prefix> data (i.e. data that is
+not part of the list of files) will be preserved.
+
+=back
+
+
+=head2 B<< writer >>
+
+This is a convenience wrapper around the constructor for
+L<Data::Embed::Writer>.
 
 =head1 BUGS AND LIMITATIONS
 

@@ -8,6 +8,16 @@ Data::Embed::Reader - embed arbitrary data in a file - reader class
 
 =head1 METHODS
 
+=head2 B<< files >>
+
+Get the list of files embedded into the main file.
+
+In list context, it returns a list of L<Data::Embed::File> objects,
+each representing a different embedded file.
+
+In scalar context, it returns an anonymous array with the list
+above.
+
 =head2 new
 
 Constructor. Takes one positional parameter, that can be either
@@ -20,15 +30,11 @@ If a filehandle is provided, it is expected to be seekable and will also
 be C<binmode>-d in C<:raw> mode; again, an exception is thrown in case
 of errors.
 
-=head2 B<< files >>
+=head2 B<< prefix >>
 
-Get the list of files embedded into the main file.
-
-In list context, it returns a list of L<Data::Embed::File> objects,
-each representing a different embedded file.
-
-In scalar context, it returns an anonymous array with the list
-above.
+Get the I<prefix> of a file, i.e. the data that is at the beginning of a
+target but that it is not indexed. It is provided as a
+C<Data::Embed::File>.
 
 =head2 B<< reset >>
 

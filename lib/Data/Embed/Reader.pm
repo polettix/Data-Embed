@@ -42,6 +42,10 @@ sub files {
    return wantarray() ? @$files : $files;
 }
 
+sub prefix {
+   return shift->{_prefix};
+}
+
 sub reset {
    my $self = shift;
    delete $self->{$_} for qw< files index >;
@@ -61,6 +65,13 @@ sub _ensure_index {
    if (!exists $self->{files}) {
       my $index = $self->_load_index()
         || {
+         _prefix => Data::Embed::File->new(
+            fh       => $self->{fh},
+            filename => $self->{filename},
+            name     => 'Data::Embed prefix data',
+            offset   => 0,
+            length   => scalar(__size($self->{fh})),
+         ),
          files  => [],
          _index => Data::Embed::File->new(
             fh       => $self->{fh},
@@ -130,6 +141,13 @@ sub _load_index {
    # return the files in the index and the index itself, all as
    # Data::Embed::File objects for consistency
    return {
+      _prefix => Data::Embed::File->new(
+         fh       => $fh,
+         filename => $filename,
+         name     => 'Data::Embed prefix data',
+         length   => $offset_correction,
+         offset   => 0,
+      ),
       files  => \@files,
       _index => Data::Embed::File->new(
          fh       => $fh,

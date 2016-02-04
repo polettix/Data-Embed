@@ -12,7 +12,41 @@ Accessor class for representing an embedded file (for reading).
 
 =head1 METHODS
 
+=head2 B<< contents >>
+
+   my $string = $def->contents();
+
+Convenience method to slurp the whole contents of the embedded file in
+one single shot. It always provides the full contents, independently of
+whether data had been read before, although it restores the filehandle
+to the previous position.
+
+=head2 B<< fh >>
+
+   my $fh = $def->fh();
+
+Get a filehandle suitable for accessing the embedded file. It provides
+back a filehandle through L<IO::Slice>, providing the illusion of
+working on a file per-se instead of a slice inside a bigger file.
+
+=head2 B<< is_same_as >>
+
+   $def->is_same_as($other_def);
+
+Test whether the specific Data::Embed::File is the same as some
+C<$other_def>.
+
+=head2 B<< name >>
+
+   my $name = $def->name();
+
+Get the name associated to the file, whatever it is.
+L<Data::Embed::Reader> sets it from what is read in the index file
+
 =head2 B<< new >>
+
+   my $def = Data::Embed::File->new(%args); # OR
+   my $def = Data::Embed::File->new(\%args);
 
 Constructor. It will act lazily, just storing the input data for later
 usage by other methods, providing validation.
@@ -44,25 +78,6 @@ C<0> means the very beginning of the file.
 the length of the data belonging to this C<File>.
 
 =back
-
-
-=head2 B<< fh >>
-
-Get a filehandle suitable for accessing the embedded file. It provides
-back a filehandle through L<IO::Slice>, providing the illusion of
-working on a file per-se instead of a slice inside a bigger file.
-
-=head2 B<< contents >>
-
-Convenience method to slurp the whole contents of the embedded file in
-one single shot. It always provides the full contents, independently of
-whether data had been read before, although it restores the filehandle
-to the previous position.
-
-=head2 B<< name >>
-
-Get the name associated to the file, whatever it is.
-L<Data::Embed::Reader> sets it from what is read in the index file
 
 =head1 AUTHOR
 

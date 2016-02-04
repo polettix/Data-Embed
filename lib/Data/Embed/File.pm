@@ -8,6 +8,7 @@ use English qw< -no_match_vars >;
 use IO::Slice;
 use Fcntl qw< :seek >;
 use Log::Log4perl::Tiny qw< :easy >;
+use Scalar::Util qw< refaddr blessed >;
 
 sub new {
    my $package = shift;
@@ -46,5 +47,43 @@ sub contents {
 } ## end sub contents
 
 sub name { return shift->{name}; }
+
+sub _dname {
+   my $name = shift->{name};
+   return $name if defined $name;
+   return '';
+}
+
+sub is_same_as {
+   my ($self, $other) = @_;
+   return unless blessed($other);
+   return unless $other->isa('Data::Embed::File');
+
+   # quick wins
+   return unless $self->{offset} == $other->{offset};
+   return unless $self->{length} == $other->{length};
+
+   # names must be the same
+   return unless $self->_dname() eq $other->_dname();
+
+   # check data sources
+   if (defined $self->{fh}) {
+      return unless defined $other->{fh};
+      return refaddr($self->{fh}) eq refaddr($other->{fh});
+   }
+   elsif (defined $self->{filename}) {
+      return unless defined $other->{filename};    # paranoid...
+      if (ref $self->{filename}) {
+         return unless ref $other->{filename};
+         return refaddr($self->{filename}) eq refaddr($other->{filename});
+      }
+      return $self->{filename} eq $other->{filename};
+   } ## end elsif (defined $self->{filename...})
+   else {                                          # paranoid!
+      return;
+   }
+
+   return 1;                                       # you made it!
+} ## end sub is_same_as
 
 1;

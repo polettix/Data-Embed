@@ -31,6 +31,15 @@ the two constants C<STARTER> and C<TERMINATOR>
 
 =back
 
+=head2 B<< escape >>
+
+   my $escaped = escape($input);
+
+escape an input string. All alphanumeric characters, plus the
+underscore C<_>, hyphen C<-> and full stop C<.> are preserved, while
+all the others are transformed into three-characters sequences C<%XX>
+where XX are two hexadecimal digits.
+
 =head2 B<< STARTER >>
 
 a string indicating the start of an index section
@@ -39,14 +48,15 @@ a string indicating the start of an index section
 
 a string indicating the end of an index section
 
-=head2 B<< escape >>
+=head2 B<< transfer >>
 
-escape an input string. All alphanumeric characters, plus the
-underscore C<_>, hyphen C<-> and full stop C<.> are preserved, while
-all the others are transformed into three-characters sequences C<%XX>
-where XX are two hexadecimal digits.
+   transfer($input_fh, $output_fh);
+
+transfer data from an input filehandle to an output one.
 
 =head2 B<< unescape >>
+
+   my $raw = unescape($escaped);
 
 unescape an input string with the reverse action performed by
 L</escape>.
