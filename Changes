@@ -1,4 +1,6 @@
 {{$NEXT}}
+
+0.3_02  2016-02-05 09:58:57 CET
    - added IO::Slice to the requirements
 
 0.3_01  2016-02-05 07:20:00 CET
