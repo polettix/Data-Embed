@@ -4,7 +4,7 @@ Data::Embed - embed arbitrary data in a file
 
 # VERSION
 
-This document describes Data::Embed version 0.3\_02.
+This document describes Data::Embed version 0.31.
 
 # SYNOPSIS
 
