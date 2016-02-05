@@ -1,5 +1,5 @@
 *.swp
-Data-Embed-*.tar.gz
-Data-Embed-*/
+/Data-Embed-*
 .build/
+!META.json
 t/*.t.test*
