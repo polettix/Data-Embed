@@ -34,9 +34,14 @@
             "Dist::Milla" : "v1.0.15",
             "Test::Pod" : "1.41"
          }
+      },
+      "runtime" : {
+         "requires" : {
+            "Log::Log4perl::Tiny" : "v1.2.7"
+         }
       }
    },
-   "release_status" : "stable",
+   "release_status" : "testing",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/polettix/Data-Embed/issues"
@@ -48,7 +53,7 @@
          "web" : "https://github.com/polettix/Data-Embed"
       }
    },
-   "version" : "0.30",
+   "version" : "0.3_01",
    "x_contributors" : [
       "Flavio Poletti <flavio@polettix.it>"
    ]
