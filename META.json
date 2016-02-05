@@ -37,6 +37,7 @@
       },
       "runtime" : {
          "requires" : {
+            "IO::Slice" : "0.2",
             "Log::Log4perl::Tiny" : "v1.2.7"
          }
       }
@@ -53,7 +54,7 @@
          "web" : "https://github.com/polettix/Data-Embed"
       }
    },
-   "version" : "0.3_01",
+   "version" : "0.3_02",
    "x_contributors" : [
       "Flavio Poletti <flavio@polettix.it>"
    ]

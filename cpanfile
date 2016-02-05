@@ -1,3 +1,4 @@
+requires 'IO::Slice', '0.2';
 requires 'Log::Log4perl::Tiny', '1.2.7';
 
 configure_requires 'Module::Build::Tiny', '0.034';
