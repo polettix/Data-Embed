@@ -5,6 +5,8 @@ use warnings;
 use English qw< -no_match_vars >;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
+our $VERSION = '0.30'; # make indexer happy
+
 use Exporter qw< import >;
 our @EXPORT_OK = qw< STARTER TERMINATOR escape unescape transfer >;
 our @EXPORT      = ();    # export nothing by default

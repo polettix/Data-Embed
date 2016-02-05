@@ -9,6 +9,8 @@ use Data::Embed::Util qw< :constants escape >;
 use Fcntl qw< :seek >;
 use Scalar::Util qw< refaddr >;
 
+our $VERSION = '0.30'; # make indexer happy
+
 sub __output_for_new {
    my $self    = shift;
    my $package = ref $self;
