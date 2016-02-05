@@ -1,4 +1,6 @@
 {{$NEXT}}
+   - removed duplicate test file pod.t
+   - set version for all modules to make indexer happy
 
 0.3_02  2016-02-05 09:58:57 CET
    - added IO::Slice to the requirements
