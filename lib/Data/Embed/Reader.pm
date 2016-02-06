@@ -32,8 +32,9 @@ sub new {
       DEBUG $package,
         ': input is a file or other thing that can be open-ed';
       $self->{filename} = $input;
-      open $self->{fh}, '<:raw', $input
+      open $self->{fh}, '<', $input
         or LOGCROAK "open('$input'): $OS_ERROR";
+      binmode $self->{fh}, ':raw';
    } ## end else [ if (ref($input) eq 'GLOB')]
 
    return $self;

@@ -1,4 +1,6 @@
 {{$NEXT}}
+   - fixed bug occurring when calling prefix before files
+   - worked around bug in pre-5.14 perls (open() on scalar refs)
 
 0.31  2016-02-05 15:25:06 CET
    - removed duplicate test file pod.t
