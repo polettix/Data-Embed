@@ -45,7 +45,7 @@ sub files {
 }
 
 sub prefix {
-   return shift->{_prefix};
+   return shift->_ensure_index()->{_prefix};
 }
 
 sub reset {
