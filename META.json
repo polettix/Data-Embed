@@ -42,7 +42,7 @@
          }
       }
    },
-   "release_status" : "testing",
+   "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
          "web" : "https://github.com/polettix/Data-Embed/issues"
@@ -54,7 +54,7 @@
          "web" : "https://github.com/polettix/Data-Embed"
       }
    },
-   "version" : "0.31_1",
+   "version" : "0.32",
    "x_contributors" : [
       "Flavio Poletti <flavio@polettix.it>"
    ]
