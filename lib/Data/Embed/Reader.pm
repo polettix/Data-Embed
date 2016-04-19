@@ -9,7 +9,7 @@ use Storable qw< dclone >;
 use Data::Embed::File;
 use Data::Embed::Util qw< :constants unescape >;
 
-our $VERSION = '0.30'; # make indexer happy
+our $VERSION = '0.32'; # make indexer happy
 
 sub new {
    my $package = shift;

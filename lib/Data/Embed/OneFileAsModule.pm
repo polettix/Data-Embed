@@ -8,7 +8,7 @@ use strict;
 use warnings;
 use Log::Log4perl::Tiny qw< :easy :dead_if_first >;
 
-our $VERSION = '0.30'; # make indexer happy
+our $VERSION = '0.32'; # make indexer happy
 
 {
    no strict 'refs';

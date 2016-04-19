@@ -10,7 +10,7 @@ use Fcntl qw< :seek >;
 use Log::Log4perl::Tiny qw< :easy >;
 use Scalar::Util qw< refaddr blessed >;
 
-our $VERSION = '0.30'; # make indexer happy
+our $VERSION = '0.32'; # make indexer happy
 
 sub new {
    my $package = shift;
